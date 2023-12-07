@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Category, Product, Pizza, Market
+from .models import Category, Product, Pizzaroni, Wildberries
 # Register your models here.
 
 @admin.register(Category)
@@ -14,11 +14,11 @@ class ProductAdmin(admin.ModelAdmin):
     list_editable = ['price', 'available']
     prepopulated_fields = {'slug':('name',)}
 
-@admin.register(Pizza)
-class Pizza(admin.ModelAdmin):
+@admin.register(Pizzaroni)
+class Pizzaroni(admin.ModelAdmin):
     list_display = ['title', 'price', 'slug']
     prepopulated_fields = {'slug':('title',)}
     
-@admin.register(Market)
-class Market(admin.ModelAdmin):
-    list_display = ['title', 'new_price', 'slug']
+@admin.register(Wildberries)
+class Wildberries(admin.ModelAdmin):
+    list_display = ['title', 'new_price', 'product_id']
