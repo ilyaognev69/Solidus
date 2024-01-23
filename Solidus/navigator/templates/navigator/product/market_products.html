@@ -1,0 +1,129 @@
+{% extends "navigator/base.html" %}
+{% load static %}
+
+{% block title %}
+    Маркетплейсы
+{% endblock %}
+
+
+{% block content %}
+  {% if query %}
+    <!-- Результат запроса Маркетплейсов -->
+    <div class="row">
+      {% if market_results %}
+        <div class="row row-2">
+          <h2>Маркетплейсы</h2>
+        </div>
+      {% endif %}
+      {% for data in market_results %}
+        <div class="col-4">
+          
+          <a href="{{ data.get_absolute_url }}">
+            <img src="{{ data.picture_urls.0 }}">
+          </a>
+          
+          <p>
+            <a href="{{ data.get_absolute_url }}">
+              {{ data.title|truncatechars:30 }}
+            </a>
+          </p>
+          
+          <p style="margin-top: -10px; margin-bottom: 3px;">
+            <span style="font-size: 17px; color: black;">
+              {{ data.price|floatformat:"0" }} ₽
+            </span>
+            <span style="text-decoration: line-through; font-size: 15px; margin-left: 10px;">
+              {{ data.old_price|floatformat:"0" }} ₽
+            </span>
+          </p>
+          
+          <div class="rating">
+            <span style="font-size: 13px;">
+              <i class="fas fa-star"></i>
+            </span>
+            <span style="font-size: 14px;">
+              {{data.reviewRating}}
+            </span>
+          </div>
+          
+          <p>{{data.website}}</p>
+        </div>
+      {% empty %}
+      {% endfor %}
+      <!-- Результат запроса Пиццерии -->
+      {% if pizza_results %}
+        <div class="row row-2">
+          <h2>Пиццерии</h2>
+        </div>
+      {% endif %}
+      {% for data in pizza_results %}
+        <div class="col-4">
+          
+          <a href="{{ data.get_absolute_url }}">
+            <img src="{{ data.picture_url }}">
+          </a>
+          
+          <h4>
+            <a href="{{ data.get_absolute_url }}">{{ data.title }}</a>
+          </h4>
+          
+          <div class="rating">
+            <i class="fas fa-star"></i>
+            <i class="fas fa-star"></i>
+            <i class="fas fa-star"></i>
+            <i class="far fa-star"></i>
+            <i class="far fa-star"></i>
+          </div>
+          
+          <p>{{ data.price }} ₽</p>
+          <p>{{data.website}}</p>
+          
+        </div>
+      {% empty %}
+      {% endfor %}
+    </div>
+  {% else %}
+    <!-- Результат данных Маркетплейсов -->
+    <div class="row row-2">
+      <h2>Маркетплейсы</h2>
+    </div>
+
+    <div class="row">
+      {% for data in market_datas %}
+        <div class="col-4">
+          
+          <a href="{{ data.get_absolute_url }}">
+            <img src="{{ data.picture_urls.0 }}">
+          </a>
+          
+          <p>
+            <a href="{{ data.get_absolute_url }}">
+              {{ data.title|truncatechars:30 }}
+            </a>
+          </p>
+          
+          <p style="margin-top: -10px; margin-bottom: 3px;">
+            <span style="font-size: 17px; color: black;">
+              {{ data.price }} ₽
+            </span>
+            <span style="text-decoration: line-through; font-size: 15px; margin-left: 10px;">
+              {{ data.old_price }} ₽
+            </span>
+          </p>
+          
+          <div class="rating">
+            <span style="font-size: 13px;">
+              <i class="fas fa-star"></i>
+            </span>
+            <span style="font-size: 14px;">
+              {{data.reviewRating}}
+            </span>
+          </div>
+          
+          <p>{{data.website}}</p>
+          
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endblock %}

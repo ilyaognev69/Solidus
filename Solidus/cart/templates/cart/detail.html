@@ -1,0 +1,338 @@
+{% extends "navigator/base.html" %}
+{% load static %}
+{% block title %}
+ Корзина
+{% endblock %}
+{% block content %}
+  {% if query %}
+    <!-- Результат запроса Маркетплейсов -->
+    <div class="row">
+      {% if market_results %}
+        <div class="row row-2">
+          <h2>Маркетплейсы</h2>
+        </div>
+      {% endif %}
+      {% for data in market_results %}
+        <div class="col-4">
+          
+          <a href="{{ data.get_absolute_url }}">
+            <img src="{{ data.picture_urls.0 }}">
+          </a>
+          
+          <p>
+            <a href="{{ data.get_absolute_url }}">
+              {{ data.title|truncatechars:30 }}
+            </a>
+          </p>
+          
+          <p style="margin-top: -10px; margin-bottom: 3px;">
+            <span style="font-size: 17px; color: black;">
+              {{ data.price|floatformat:"0" }} ₽
+            </span>
+            <span style="text-decoration: line-through; font-size: 15px; margin-left: 10px;">
+              {{ data.old_price|floatformat:"0" }} ₽
+            </span>
+          </p>
+          
+          <div class="rating">
+            <span style="font-size: 13px;">
+              <i class="fas fa-star"></i>
+            </span>
+            <span style="font-size: 14px;">
+              {{data.reviewRating}}
+            </span>
+          </div>
+          
+          <p>{{data.website}}</p>
+        </div>
+      {% empty %}
+      {% endfor %}
+      <!-- Результат запроса Пиццерии -->
+      {% if pizza_results %}
+        <div class="row row-2">
+          <h2>Пиццерии</h2>
+        </div>
+      {% endif %}
+      {% for data in pizza_results %}
+        <div class="col-4">
+          
+          <a href="{{ data.get_absolute_url }}">
+            <img src="{{ data.picture_url }}">
+          </a>
+          
+          <h4>
+            <a href="{{ data.get_absolute_url }}">{{ data.title }}</a>
+          </h4>
+          
+          <div class="rating">
+            <i class="fas fa-star"></i>
+            <i class="fas fa-star"></i>
+            <i class="fas fa-star"></i>
+            <i class="far fa-star"></i>
+            <i class="far fa-star"></i>
+          </div>
+          
+          <p>{{ data.price }} ₽</p>
+          <p>{{data.website}}</p>
+          
+        </div>
+      {% empty %}
+      {% endfor %}
+    </div>
+  {% else %}
+    <h1>Корзина</h1>
+    {% if wildberries_items %}
+      <table id="cart" class="cart-table">
+        <thead>
+          <tr>
+            <th class="cart-title"><p>Вайлдберриз</p></th>
+            <th  colspan="5"></th> 
+          </tr>
+        </thead>
+        <tbody>
+          {% for item, add_form in wildberries_items %}
+            {% with product=item.content_object %}
+              <tr class="cart-item">
+                <td class="cart-product-image">
+                  <a href="{{ product.get_absolute_url }}">
+                    <img src="{% if product.picture_urls.0 %}{{ product.picture_urls.0}}{% else %}{% static 'img/no_image.png' %}{% endif %}" alt="{{ product.title }}">
+                  </a>
+                </td>
+                <td class="cart-product-title">
+                  {{ product.title }}
+                </td>
+                <td class="cart-product-quantity">
+                  <form action="{% url 'cart:cart_add_wildberries' product.id %}" method="post" class="quantity-form" data-product-id="{{ product.id }}" data-price-per-item="{{ product.price }}" data-old-price-per-item="{{ product.old_price }}">
+                    <button type="button" class="cart-change-btn quantity-change" data-change="-1"><i class="bi bi-dash"></i></button>
+                    {{ add_form.quantity }}
+                    <button type="button" class="cart-change-btn quantity-change" data-change="1"><i class="bi bi-plus"></i></button>
+                    {{ add_form.override }}
+                    {% csrf_token %}
+                  </form>
+                </td>
+                <td class="num cart-product-price" data-product-id="{{ product.id }}">{{ item.total_price }} ₽</td>
+                <td class="cart-product-old-price" data-product-id="{{ product.id }}">{{ item.total_price_for_old }} ₽</td>
+                <td class="cart-product-remove">
+                  <form action="{% url 'cart:cart_remove_wildberries' product.id %}" method="post" class="remove-form">
+                    <button type="submit" class="remove-button">
+                      <i class="bi bi-trash3"></i>
+                    </button>
+                    {% csrf_token %}
+                  </form>
+                </td>
+              </tr>
+            {% endwith %}
+          {% endfor %}
+          <tr class="cart-total-on-bottom">
+            <td class="cart-total-price"><p>Итого</p></td>
+            <td colspan=2></td>
+            <td class="num total-price">{{ total_price_wildberries }} ₽</td>
+            <td class="num total-price-for-old">{{ total_price_for_old_wildberries }} ₽</td>
+            <td><a href="{% url 'orders:order_create_wildberries' %}" class="button">Оформить</a></td>
+          </tr>
+        </tbody>
+      </table>
+    {% endif %}
+    {% if pizzaroni_items %}
+      <h2>Пиццарони</h2>    
+      {% for item, add_form in pizzaroni_items %}
+        <table class="cart">
+          <thead><tr>
+              <th></th>
+              <th></th>
+              <th></th>
+              <th></th>
+              <th></th></tr>
+          </thead>
+          <tbody>
+            {% with product=item.content_object %}
+              <tr>
+                <td>
+                  <a href="{{ product.get_absolute_url }}">
+                    <img src="{% if product.picture_url %}{{ product.picture_url}}{% else %}{% static 'img/no_image.png' %}{% endif %}">
+                  </a>
+                </td>
+                <td>
+                  {{ product.title }}
+                </td>
+                <td>
+                  <form action="{% url 'cart:cart_add_pizzaroni' product.id %}" method="post">
+                    {{ add_form.quantity }}
+                    {{ add_form.override }}
+                    <input type="submit" value="Обновить">
+                    {% csrf_token %}
+                  </form>
+                </td>
+                <td>
+                  <form action="{% url 'cart:cart_remove_pizzaroni' product.id %}" method="post">
+                    <input type="submit" value="Убрать">
+                    {% csrf_token %}
+                  </form>
+                </td>
+                <td class="num">{{ item.total_price }} ₽</td>
+              </tr>
+            {% endwith %}
+          </tbody>
+        </table>
+      {% endfor %}
+      <span>Общая сумма</span>
+      <span class="num">{{ total_price_pizzaroni }} ₽</span>
+      <a href="{% url 'orders:order_create_pizzaroni' %}" class="cart-order-button">Оформить</a>
+    {% endif %}
+    <div class="more-actions">
+      <a class="load_more" href="{% url 'navigator:product_list' %}">
+        <div>
+          <button id="load-more">К покупкам</button>
+        </div>
+      </a>
+    </div>
+  {% endif %}
+{% endblock %}
+{% block script %}
+
+document.querySelectorAll('.quantity-form').forEach(form => {
+  form.querySelector('input[type="number"]').addEventListener('change', function(e) {
+    e.preventDefault(); // Предотвращаем стандартную отправку формы
+
+    let quantity = parseInt(this.value);
+
+    // Устанавливаем ограничение на максимальное количество
+    if (quantity > 99) {
+      quantity = 99;
+      this.value = 99; // Обновляем значение в поле ввода
+    }
+    const productId = form.dataset.productId;
+    const pricePerItem = parseFloat(form.dataset.pricePerItem);
+    const oldPricePerItem = parseFloat(form.dataset.oldPricePerItem); // Старая цена за единицу
+
+    // Вычисляем новые цены
+    const newTotalPrice = quantity * pricePerItem;
+    const newOldTotalPrice = quantity * oldPricePerItem;
+
+    // Обновляем цены в DOM
+    document.querySelector(`.cart-product-price[data-product-id="${productId}"]`).textContent = `${newTotalPrice.toFixed(0)} ₽`;
+    document.querySelector(`.cart-product-old-price[data-product-id="${productId}"]`).textContent = `${newOldTotalPrice.toFixed(0)} ₽`;
+
+    updateTotalPrice();
+
+    // Функция для обновления общей суммы
+    function updateTotalPrice() {
+      let totalPrice = 0;
+      document.querySelectorAll('.cart-product-price').forEach(price => {
+        totalPrice += parseFloat(price.textContent.replace(' ₽', ''));
+      });
+      // Обновляем общую сумму в DOM
+      document.querySelector('.num.total-price').textContent = `${totalPrice.toFixed(0)} ₽`;
+      
+
+      let oldtotalPrice = 0;
+      document.querySelectorAll('.cart-product-old-price').forEach(price => {
+        oldtotalPrice += parseFloat(price.textContent.replace(' ₽', ''));
+      });
+      document.querySelector('.num.total-price-for-old').textContent = `${oldtotalPrice.toFixed(0)} ₽`;
+    }
+
+
+    // Отправляем AJAX-запрос на сервер
+    fetch(form.getAttribute('action'), {
+      method: 'POST',
+      body: new FormData(form),
+      headers: {
+        'X-CSRFToken': form.querySelector('[name=csrfmiddlewaretoken]').value,
+        'X-Requested-With': 'XMLHttpRequest'
+      },
+    })
+    .then(response => {
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+      return response.json();
+    })
+    .then(data => {
+      // Если сервер возвращает обновлённые цены, используйте их для обновления DOM
+      // Пример: если сервер возвращает обновлённую общую и старую цену
+      // document.querySelector(`.cart-product-price[data-product-id="${productId}"]`).textContent = `${data.new_total_price} ₽`;
+      // document.querySelector(`.cart-product-old-price[data-product-id="${productId}"]`).textContent = `${data.new_old_total_price} ₽`;
+    })
+    .catch(error => {
+      console.error('Error:', error);
+    });
+  });
+});
+
+
+document.querySelectorAll('.quantity-form').forEach(form => {
+  form.querySelectorAll('.quantity-change').forEach(button => {
+    button.addEventListener('click', function(e) {
+      e.preventDefault();
+      const quantityInput = form.querySelector('input[type="number"]');
+      let quantity = parseInt(quantityInput.value) || 0;
+      const change = parseInt(this.dataset.change);
+
+      quantity += change;
+      if (quantity < 0) quantity = 0; // Предотвращаем отрицательные значения
+      if (quantity > 99) quantity = 99; // Ограничение по максимальному количеству
+
+      quantityInput.value = quantity;
+
+      // Вызываем функцию для обновления цен
+      updatePrices(form, quantity);
+    });
+  });
+
+  function updatePrices(form, quantity) {
+    const productId = form.dataset.productId;
+    const pricePerItem = parseFloat(form.dataset.pricePerItem);
+    const oldPricePerItem = parseFloat(form.dataset.oldPricePerItem);
+
+    const newTotalPrice = quantity * pricePerItem;
+    const newOldTotalPrice = quantity * oldPricePerItem;
+
+    document.querySelector(`.cart-product-price[data-product-id="${productId}"]`).textContent = `${newTotalPrice.toFixed(0)} ₽`;
+    document.querySelector(`.cart-product-old-price[data-product-id="${productId}"]`).textContent = `${newOldTotalPrice.toFixed(0)} ₽`;
+
+    // Обновляем общую сумму
+    updateTotalPrice();
+    sendQuantityUpdate(productId, quantity);
+  }
+
+  function updateTotalPrice() {
+    let totalPrice = 0;
+    document.querySelectorAll('.cart-product-price').forEach(price => {
+      totalPrice += parseFloat(price.textContent.replace(' ₽', ''));
+    });
+    document.querySelector('.num.total-price').textContent = `${totalPrice.toFixed(0)} ₽`;
+        
+    let oldtotalPrice = 0;
+    document.querySelectorAll('.cart-product-old-price').forEach(price => {
+      oldtotalPrice += parseFloat(price.textContent.replace(' ₽', ''));
+    });
+    document.querySelector('.num.total-price-for-old').textContent = `${oldtotalPrice.toFixed(0)} ₽`;
+  }
+  
+  function sendQuantityUpdate(productId, quantity) {
+  fetch(form.getAttribute('action'), {
+      method: 'POST',
+      body: new FormData(form),
+      headers: {
+        'X-CSRFToken': form.querySelector('[name=csrfmiddlewaretoken]').value,
+        'X-Requested-With': 'XMLHttpRequest'
+      },
+    })
+  .then(response => {
+    if (!response.ok) {
+      throw new Error('Network response was not ok');
+    }
+    return response.json();
+  })
+  .then(data => {
+    console.log('Quantity updated successfully');
+  })
+  .catch(error => {
+    console.error('Error:', error);
+  });
+}
+});
+
+
+{% endblock %}

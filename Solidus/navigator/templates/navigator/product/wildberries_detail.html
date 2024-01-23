@@ -1,0 +1,218 @@
+{% extends "navigator/base.html" %}
+{% load my_custom_filters %}
+{% load static %}
+
+{% block title %}
+    {{ market_data.title }}
+{% endblock %}
+
+{% block content %}
+  {% if query %}
+    <!-- Результат запроса Маркетплейсов -->
+    <div class="row">
+      {% if market_results %}
+        <div class="row row-2">
+          <h2>Маркетплейсы</h2>
+        </div>
+      {% endif %}
+      {% for data in market_results %}
+        <div class="col-4">
+          
+          <a href="{{ data.get_absolute_url }}">
+            <img src="{{ data.picture_urls.0 }}">
+          </a>
+          
+          <p>
+            <a href="{{ data.get_absolute_url }}">
+              {{ data.title|truncatechars:30 }}
+            </a>
+          </p>
+          
+          <p style="margin-top: -10px; margin-bottom: 3px;">
+            <span style="font-size: 17px; color: black;">
+              {{ data.price|floatformat:"0" }} ₽
+            </span>
+            <span style="text-decoration: line-through; font-size: 15px; margin-left: 10px;">
+              {{ data.old_price|floatformat:"0" }} ₽
+            </span>
+          </p>
+          
+          <div class="rating">
+            <span style="font-size: 13px;">
+              <i class="fas fa-star"></i>
+            </span>
+            <span style="font-size: 14px;">
+              {{data.reviewRating}}
+            </span>
+          </div>
+          
+          <p>{{data.website}}</p>
+        </div>
+      {% empty %}
+      {% endfor %}
+      <!-- Результат запроса Пиццерии -->
+      {% if pizza_results %}
+        <div class="row row-2">
+          <h2>Пиццерии</h2>
+        </div>
+      {% endif %}
+      {% for data in pizza_results %}
+        <div class="col-4">
+          
+          <a href="{{ data.get_absolute_url }}">
+            <img src="{{ data.picture_url }}">
+          </a>
+          
+          <h4>
+            <a href="{{ data.get_absolute_url }}">{{ data.title }}</a>
+          </h4>
+          
+          <div class="rating">
+            <i class="fas fa-star"></i>
+            <i class="fas fa-star"></i>
+            <i class="fas fa-star"></i>
+            <i class="far fa-star"></i>
+            <i class="far fa-star"></i>
+          </div>
+          
+          <p>{{ data.price }} ₽</p>
+          <p>{{data.website}}</p>
+          
+        </div>
+      {% empty %}
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class = "card-wrapper">
+        <!-- card left -->
+        <div class = "product-imgs">
+          <div class = "img-display">
+            <div class = "img-showcase">
+              {% if range|length > 3 %}
+                {% for x in range %}
+                  <img src="{% if market_data.picture_urls|get_item:x %}{{ market_data.picture_urls|get_item:x }}{% else %}{% static 'img/no_image.png' %}{% endif %}">
+                {% endfor %}
+              {% else %}
+                <img src="{% if market_data.picture_urls.0 %}{{ market_data.picture_urls.0 }}{% else %}{% static 'img/no_image.png' %}{% endif %}">
+              {% endif %}
+            </div>
+          </div>
+          <div class = "img-select">
+            {% if range|length > 3 %}
+              {% for x in range %}
+                <div class = "img-item">
+                  <a href = "#" data-id ="{{x|add:'1'}}">
+                    <img src = "{% if market_data.picture_urls|get_item:x %}{{ market_data.picture_urls|get_item:x }}{% else %}{% static 'img/no_image.png' %}{% endif %}">
+                  </a>
+                </div>
+              {% endfor %}
+            {% endif %}
+          </div>
+        </div>
+        <!-- card right -->
+        <div class = "product-content">
+          <h2 class = "product-title">{{  market_data.title }}</h2>
+          <a href = "https://www.wildberries.ru/" class = "product-link">{{market_data.website}}</a>
+          
+          <div class = "product-rating">
+            <span style="font-size: 13px; color: gold"><i class="fas fa-star"></i></span>
+            <span>{{market_data.reviewRating}}</span>
+          </div>
+
+          <div class = "product-price">
+            <p class = "last-price">Старая цена: <span>{{ market_data.old_price }} ₽</span></p>
+            <p class = "new-price">Новая цена: <span>{{ market_data.price }} ₽</span></p>
+          </div>
+
+          <div class = "product-detail">
+            <h2>Подробности: </h2>
+            <div id="product-description" class="description-container">
+              {{market_data.description|linebreaks}}
+            </div>
+            <div class="toggle-container">
+              <a href="#" id="toggle-details">Показать больше</a>
+            </div>
+          </div>
+
+          <div class = "purchase-info">
+            <form action="{% url 'cart:cart_add_wildberries' market_data.id %}" method="post" class="quantity-form_in-details" data-product-id="{{ product.id }}" data-price-per-item="{{ product.price }}" data-old-price-per-item="{{ product.old_price }}">
+              <div class="quantity-form_in-details-div">
+                <button type="button" class="cart-change-btn quantity-change" data-change="-1"><i class="bi bi-dash"></i></button>
+                {{ cart_product_form }}
+                <button type="button" class="cart-change-btn quantity-change" data-change="1"><i class="bi bi-plus"></i></button>
+                {% csrf_token %}
+              </div>
+              <button type = "submit" class = "btn">
+                В корзину <i class = "fas fa-shopping-cart"></i>
+              </button>
+            </form>
+          </div>
+        </div>
+    </div>
+  {% endif %}
+{% endblock %}
+
+{% block script %}
+  <!-- Выбор фотографии -->
+  const imgs = document.querySelectorAll('.img-select a');
+  const imgBtns = [...imgs];
+  let imgId = 1;
+
+  imgBtns.forEach((imgItem) => {
+      imgItem.addEventListener('click', (event) => {
+          event.preventDefault();
+          imgId = imgItem.dataset.id;
+          slideImage();
+      });
+  });
+
+  function slideImage(){
+      const displayWidth = document.querySelector('.img-showcase img:first-child').clientWidth;
+
+      document.querySelector('.img-showcase').style.transform = `translateX(${- (imgId - 1) * displayWidth}px)`;
+  }
+
+  window.addEventListener('resize', slideImage);
+
+  <!-- Кнопка подробности -->
+
+  document.addEventListener('DOMContentLoaded', function() {
+    var description = document.getElementById('product-description');
+    var toggleBtn = document.getElementById('toggle-details');
+
+    toggleBtn.addEventListener('click', function(e) {
+      e.preventDefault();
+
+      if (description.style.height) {
+        description.style.height = null;
+        toggleBtn.textContent = 'Показать больше';
+      } else {
+        var currentHeight = description.scrollHeight; // Используем scrollHeight
+        description.style.height = (currentHeight + 10) + 'px'; // Добавляем немного дополнительного пространства
+        toggleBtn.textContent = 'Скрыть';
+      }
+    });
+  });
+
+
+
+document.querySelectorAll('.quantity-form_in-details').forEach(form => {
+  form.querySelectorAll('.quantity-change').forEach(button => {
+    button.addEventListener('click', function(e) {
+      e.preventDefault();
+      const quantityInput = form.querySelector('input[type="number"]');
+      let quantity = parseInt(quantityInput.value) || 0;
+      const change = parseInt(this.dataset.change);
+
+      quantity += change;
+      if (quantity < 0) quantity = 0; // Предотвращаем отрицательные значения
+      if (quantity > 99) quantity = 99; // Ограничение по максимальному количеству
+
+      quantityInput.value = quantity;
+
+      // Вызываем функцию для обновления цен
+    });
+  });
+});
+
+{% endblock %}
